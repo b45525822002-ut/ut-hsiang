@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中壢房仲小張 萬能房產計算機</title>
+<style>
+  :root{
+    --bg:#f6f3ec;
+    --panel:#ffffff;
+    --ink:#2b241c;
+    --ink-soft:#6b6154;
+    --gold:#b8863b;
+    --gold-deep:#96692a;
+    --gold-pale:#faf1de;
+    --line:#e7e0d2;
+    --accent-red:#a3402f;
+    --shadow:0 1px 2px rgba(43,36,28,.04), 0 8px 24px rgba(43,36,28,.06);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    padding:24px 16px 64px;
+  }
+  .wrap{max-width:920px;margin:0 auto;}
+
+  header.top{
+    background:var(--panel);
+    border-radius:16px;
+    box-shadow:var(--shadow);
+    padding:20px 24px;
+    display:flex;
+    align-items:center;
+    gap:16px;
+    margin-bottom:16px;
+  }
+  .logo{
+    width:48px;height:48px;border-radius:12px;
+    background:linear-gradient(155deg,var(--accent-red),#c2543f);
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font-weight:700;font-size:20px;flex-shrink:0;
+    font-family:Georgia,serif;
+  }
+  header.top h1{
+    font-size:19px;margin:0;font-weight:700;letter-spacing:.02em;
+  }
+  header.top p{margin:2px 0 0;font-size:12.5px;color:var(--ink-soft);}
+
+  nav.tabs{
+    display:flex;flex-wrap:wrap;gap:6px;
+    background:var(--panel);
+    border-radius:14px;
+    box-shadow:var(--shadow);
+    padding:8px;
+    margin-bottom:16px;
+    position:sticky;
+    top:8px;
+    z-index:50;
+  }
+  @media(max-width:700px){
+    nav.tabs{
+      flex-wrap:nowrap;
+      overflow-x:auto;
+      -webkit-overflow-scrolling:touch;
+      scrollbar-width:none;
+    }
+    nav.tabs::-webkit-scrollbar{display:none;}
+    nav.tabs button{flex-shrink:0;}
+  }
+  nav.tabs button{
+    border:none;background:transparent;cursor:pointer;
+    padding:11px 14px;border-radius:9px;
+    font-size:13.5px;font-weight:600;color:var(--ink-soft);
+    display:flex;align-items:center;gap:6px;
+    transition:background .15s, color .15s;
+    font-family:inherit;
+    white-space:nowrap;
+  }
+  @media(max-width:700px){
+    nav.tabs button{padding:10px 12px;font-size:13px;}
+  }
+  nav.tabs button:hover{background:var(--gold-pale);}
+  nav.tabs button.active{
+    background:var(--gold-deep);
+    color:#fff;
+  }
+
+  .panel{
+    background:var(--panel);
+    border-radius:16px;
+    box-shadow:var(--shadow);
+    padding:24px;
+    display:none;
+  }
+  .panel.active{display:block;}
+  .panel h2{
+    margin:0 0 4px;font-size:19px;
+    padding-left:12px;border-left:4px solid var(--gold);
+  }
+  .panel .sub{
+    margin:0 0 20px 16px;font-size:13px;color:var(--ink-soft);
+  }
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+  @media(max-width:560px){.grid2{grid-template-columns:1fr;}}
+
+  .field label{
+    display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:var(--ink);
+  }
+  .field label .unit{font-weight:400;color:var(--ink-soft);font-size:12px;margin-left:4px;}
+  .field input, .field select{
+    width:100%;padding:12px 12px;border-radius:10px;
+    border:1px solid var(--line);background:#fdfcfa;
+    font-size:16px;color:var(--ink);font-family:inherit;
+  }
+  .field input:focus, .field select:focus{
+    outline:none;border-color:var(--gold);background:#fff;
+  }
+  .datefield{display:flex;gap:6px;}
+  .datefield select{flex:1;}
+
+  .segbtns{display:flex;gap:8px;flex-wrap:wrap;}
+  .segbtns button{
+    flex:1;min-width:90px;padding:11px 10px;border-radius:10px;
+    border:1px solid var(--line);background:#fdfcfa;cursor:pointer;
+    font-size:13.5px;font-weight:600;color:var(--ink-soft);
+    font-family:inherit;transition:all .15s;
+  }
+  .segbtns button.on{
+    background:var(--gold-deep);border-color:var(--gold-deep);color:#fff;
+  }
+
+  .toggle-row{
+    display:flex;align-items:center;justify-content:space-between;
+    background:var(--gold-pale);border:1px dashed var(--gold);
+    border-radius:10px;padding:12px 14px;margin-bottom:16px;
+  }
+  .toggle-row .t-label{font-size:13.5px;font-weight:600;}
+  .toggle-row .t-desc{font-size:11.5px;color:var(--ink-soft);margin-top:2px;}
+  .switch{position:relative;width:42px;height:24px;flex-shrink:0;}
+  .switch input{opacity:0;width:0;height:0;}
+  .switch .slider{
+    position:absolute;inset:0;background:#ddd3bd;border-radius:24px;cursor:pointer;transition:.2s;
+  }
+  .switch .slider:before{
+    content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;
+    background:#fff;border-radius:50%;transition:.2s;
+  }
+  .switch input:checked + .slider{background:var(--gold-deep);}
+  .switch input:checked + .slider:before{transform:translateX(18px);}
+
+  .badge{
+    display:inline-block;font-size:10.5px;font-weight:700;
+    background:#e8dcc4;color:var(--gold-deep);
+    padding:2px 8px;border-radius:20px;margin-left:8px;vertical-align:middle;
+  }
+
+  .note{
+    background:var(--gold-pale);border-radius:10px;padding:12px 14px;
+    font-size:12.5px;color:#6b5732;line-height:1.7;margin-bottom:16px;
+  }
+  .note b{color:var(--gold-deep);}
+
+  .resultbox{
+    background:linear-gradient(155deg,var(--gold),var(--gold-deep));
+    border-radius:14px;padding:18px 20px;color:#fff;margin-bottom:14px;
+  }
+  .resultbox .rlabel{font-size:12.5px;opacity:.9;margin-bottom:6px;font-weight:600;}
+  .resultbox .rvalue{font-size:30px;font-weight:800;letter-spacing:.01em;}
+  .resultbox .rvalue small{font-size:15px;font-weight:600;margin-left:4px;}
+
+  .detaillist{
+    background:#fdfcfa;border:1px solid var(--line);border-radius:12px;padding:6px 16px;
+  }
+  .detaillist .row{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:11px 0;border-bottom:1px solid var(--line);font-size:13.5px;
+  }
+  .detaillist .row:last-child{border-bottom:none;}
+  .detaillist .row.total{font-weight:700;}
+  .detaillist .row .v{font-weight:700;color:var(--gold-deep);}
+  .detaillist .row .v.neg{color:var(--accent-red);}
+
+  .formula-box{
+    background:var(--gold-pale);border-radius:10px;padding:14px 18px;text-align:center;
+    margin-bottom:16px;font-size:13px;color:#6b5732;line-height:1.9;
+  }
+  .formula-box b{font-size:15px;color:var(--gold-deep);}
+
+  footer.pagefoot{
+    text-align:center;margin-top:20px;font-size:11.5px;color:var(--ink-soft);
+  }
+  .customize-hint{
+    max-width:920px;margin:20px auto 0;font-size:12px;color:var(--ink-soft);
+    background:#fff;border-radius:12px;padding:12px 16px;box-shadow:var(--shadow);
+    line-height:1.7;
+  }
+  .customize-hint b{color:var(--gold-deep);}
+
+  .contact-bar{
+    display:flex;justify-content:center;gap:12px;margin-top:16px;flex-wrap:wrap;
+  }
+  .contact-btn{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:12px 22px;border-radius:12px;
+    font-size:14px;font-weight:700;text-decoration:none;
+    font-family:inherit;
+  }
+  .contact-btn.line{background:#06C755;color:#fff;}
+  .contact-btn.phone{background:#2b241c;color:#fff;}
+  h3.sectiontitle{font-size:13.5px;margin:20px 0 10px;color:var(--ink);}
+
+  /* ---- Mobile comfort pass ---- */
+  @media(max-width:600px){
+    body{padding:12px 10px 48px;}
+    header.top{padding:16px 16px;gap:12px;}
+    header.top h1{font-size:16.5px;}
+    header.top p{font-size:11.5px;}
+    .panel{padding:18px 16px;border-radius:14px;}
+    .panel h2{font-size:17px;}
+    .resultbox{padding:16px 18px;}
+    .resultbox .rvalue{font-size:26px;}
+    .segbtns button{min-width:0;font-size:13px;padding:11px 8px;}
+    .datefield{flex-wrap:wrap;}
+    .datefield select{min-width:29%;}
+    .detaillist .row{font-size:13px;padding:10px 0;}
+    .grid2{gap:12px;}
+  }
+  @media(min-width:601px) and (max-width:900px){
+    .wrap{max-width:100%;}
+  }
+  @media(min-width:901px){
+    .wrap{max-width:960px;}
+    .panel{padding:30px 34px;}
+    header.top{padding:24px 30px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="logo">宅</div>
+    <div>
+      <h1>中壢房仲小張 萬能房產計算機</h1>
+      <p>房地合一稅・購屋能力・房貸試算・買賣雜費・坪數換算・車位拆算・賣方實拿速算</p>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs"></nav>
+
+  <!-- ============ 1. 房地合一 ============ -->
+  <section class="panel" id="panel-land">
+    <h2>房地合一</h2>
+    <p class="sub">計算個人房地合一稅</p>
+
+    <div class="grid2">
+      <div class="field"><label>賣出總價 <span class="unit">萬</span></label>
+        <input type="number" id="l_sell" placeholder="例如: 2000"></div>
+      <div class="field"><label>取得成本 <span class="unit">萬</span></label>
+        <input type="number" id="l_cost" placeholder="例如: 1500"></div>
+      <div class="field"><label>土地漲價總數額 <span class="unit">萬</span></label>
+        <input type="number" id="l_landgain" placeholder="參考土地增值稅單"></div>
+      <div class="field"><label>取得相關費用 <span class="unit">萬</span></label>
+        <input type="number" id="l_costfee" placeholder="買時仲介、契稅等"></div>
+    </div>
+
+    <h3 class="sectiontitle">移轉費用扣除方式</h3>
+    <div class="segbtns" id="l_feemode" style="margin-bottom:8px;">
+      <button data-v="auto" class="on">預設 3%(上限 30 萬)</button>
+      <button data-v="manual">手動輸入</button>
+    </div>
+    <div id="l_feeauto_note" style="font-size:12px;color:var(--ink-soft);margin-bottom:16px;"></div>
+    <div class="field" id="l_feemanual_wrap" style="display:none;margin-bottom:16px;">
+      <label>移轉費用(手動) <span class="unit">萬</span></label>
+      <input type="number" id="l_feemanual" placeholder="例如: 40">
+    </div>
+
+    <h3 class="sectiontitle">持有期間</h3>
+    <div class="segbtns" id="l_hold" style="margin-bottom:16px;">
+      <button data-v="2" class="on">2 年內</button>
+      <button data-v="5">2-5 年</button>
+      <button data-v="10">5-10 年</button>
+      <button data-v="99">10 年以上</button>
+    </div>
+
+    <div class="toggle-row">
+      <div>
+        <div class="t-label">自用住宅滿 6 年優惠</div>
+        <div class="t-desc">400 萬免稅 + 超過部分 10%</div>
+      </div>
+      <label class="switch"><input type="checkbox" id="l_selfuse"><span class="slider"></span></label>
+    </div>
+
+    <div class="resultbox">
+      <div class="rlabel">房地合一稅</div>
+      <div class="rvalue" id="l_out_tax">—<small>萬</small></div>
+    </div>
+    <div class="detaillist">
+      <div class="row"><span>稅基</span><span class="v" id="l_out_base">— 萬</span></div>
+      <div class="row"><span>適用稅率</span><span class="v" id="l_out_rate">—</span></div>
+      <div class="row"><span>移轉費用</span><span class="v" id="l_out_fee">— 萬</span></div>
+    </div>
+  </section>
+
+  <!-- ============ 2. 購屋能力 ============ -->
+  <section class="panel" id="panel-afford">
+    <h2>購屋能力</h2>
+    <p class="sub">從月收入反推可買總價(試算利率 2.3%)</p>
+
+    <div class="grid2">
+      <div class="field"><label>月收入 <span class="unit">萬</span></label>
+        <input type="number" id="a_income" placeholder="例如: 8"></div>
+      <div class="field"><label>現有自備款 <span class="unit">萬</span></label>
+        <input type="number" id="a_down" placeholder="例如: 300"></div>
+    </div>
+
+    <h3 class="sectiontitle">負債比上限(月收占比)</h3>
+    <div class="segbtns" id="a_ratio" style="margin-bottom:16px;">
+      <button data-v="0.33" class="on">保守 33%</button>
+      <button data-v="0.5">積極 50%</button>
+      <button data-v="0.6">緊繃 60%</button>
+    </div>
+
+    <h3 class="sectiontitle">貸款年限</h3>
+    <div class="segbtns" id="a_years" style="margin-bottom:8px;">
+      <button data-v="20">20 年</button>
+      <button data-v="30" class="on">30 年</button>
+    </div>
+    <div style="text-align:right;font-size:11.5px;color:var(--ink-soft);margin-bottom:16px;">*試算利率以 2.3% 估計</div>
+
+    <div class="resultbox">
+      <div class="rlabel">建議房屋總價上限</div>
+      <div class="rvalue" id="a_out_total">—<small>萬</small></div>
+    </div>
+    <div class="detaillist">
+      <div class="row"><span>建議貸款金額</span><span class="v" id="a_out_loan">— 萬</span></div>
+      <div class="row"><span>每月房貸支出</span><span class="v" id="a_out_monthly">— 萬</span></div>
+    </div>
+  </section>
+
+  <!-- ============ 3. 房貸試算 ============ -->
+  <section class="panel" id="panel-mortgage">
+    <h2>房貸試算</h2>
+    <p class="sub">本利均攤計算每月還款金額(支援寬限期)</p>
+
+    <div class="grid2">
+      <div class="field"><label>貸款金額 <span class="unit">萬</span></label>
+        <input type="number" id="m_amount" placeholder="例如: 1000"></div>
+      <div class="field"><label>年利率 <span class="unit">%</span></label>
+        <input type="number" id="m_rate" placeholder="例如: 2.2" value="2.2"></div>
+      <div class="field"><label>貸款期限 <span class="unit">年</span></label>
+        <input type="number" id="m_years" value="30"></div>
+      <div class="field"><label>寬限期 <span class="unit">年</span></label>
+        <input type="number" id="m_grace" value="0"></div>
+    </div>
+
+    <div class="resultbox">
+      <div class="rlabel">每月應繳(本息攤還)</div>
+      <div class="rvalue" id="m_out_monthly">—<small>萬</small></div>
+    </div>
+    <div class="detaillist">
+      <div class="row"><span>寬限期內每月(只繳利息)</span><span class="v" id="m_out_grace">— 萬</span></div>
+      <div class="row"><span>總利息支出</span><span class="v" id="m_out_interest">— 萬</span></div>
+      <div class="row total"><span>總還款金額</span><span class="v" id="m_out_totalpay">— 萬</span></div>
+    </div>
+  </section>
+
+  <!-- ============ 4. 買賣雜費 ============ -->
+  <section class="panel" id="panel-fees">
+    <h2>買賣雜費</h2>
+    <p class="sub">買方 / 賣方雜費試算</p>
+
+    <div class="field" style="margin-bottom:16px;">
+      <label>成交總價 <span class="unit">萬</span></label>
+      <input type="number" id="f_price" placeholder="例如: 1300">
+    </div>
+
+    <h3 class="sectiontitle">您的身分</h3>
+    <div class="segbtns" id="f_role" style="margin-bottom:16px;">
+      <button data-v="buyer" class="on">買方 (Buyer)</button>
+      <button data-v="seller">賣方 (Seller)</button>
+    </div>
+
+    <div id="f_buyer_extra" class="grid2" style="margin-bottom:16px;">
+      <div class="field"><label>房屋評定現值 <span class="unit">萬・選填</span></label>
+        <input type="number" id="f_housevalue" placeholder="無資料可留空"></div>
+      <div class="field"><label>土地申報地價總額 <span class="unit">萬・選填</span></label>
+        <input type="number" id="f_landvalue" placeholder="無資料可留空"></div>
+    </div>
+    <div id="f_seller_extra" class="grid2" style="margin-bottom:16px;display:none;">
+      <div class="field"><label>土地增值稅 <span class="unit">萬・依稅單</span></label>
+        <input type="number" id="f_landtax" placeholder="無資料可留空"></div>
+      <div class="field"><label>仲介服務費率 <span class="unit">%</span></label>
+        <input type="number" id="f_svcrate" value="4"></div>
+    </div>
+
+    <div class="resultbox">
+      <div class="rlabel">費用總計</div>
+      <div class="rvalue" id="f_out_total">$—</div>
+    </div>
+    <div class="detaillist" id="f_out_detail"></div>
+
+    <div class="note" style="margin-top:16px;">
+      <b>【政府規費與其他成本說明】</b><br>
+      契稅：房屋評定現值 × 6%　｜　印花稅：公定契約書上之房地總價 × 0.1%<br>
+      地政登記規費：(土地申報地價總額 + 房屋評定現值) × 0.1%　｜　書狀費：每張 80 元<br>
+      其他成本：銀行徵信、開辦、手續費、產險費(火災地震險)<br>
+      * 公部門費用依實際稅單金額為主　｜　* 代書費依代書事務所為主
+    </div>
+  </section>
+
+  <!-- ============ 5. 坪數換算 ============ -->
+  <section class="panel" id="panel-convert">
+    <h2>坪數換算</h2>
+    <p class="sub">坪 ⇄ 平方公尺</p>
+
+    <div class="formula-box">
+      換算公式<br>
+      <b>1 坪 = 3.30579 平方公尺</b><br>
+      <b>1 平方公尺 = 0.3025 坪</b>
+    </div>
+
+    <div class="grid2">
+      <div class="field"><label>坪數</label>
+        <input type="number" id="c_ping" value="0"></div>
+      <div class="field"><label>平方公尺 (m²)</label>
+        <input type="number" id="c_m2" value="0"></div>
+    </div>
+  </section>
+
+  <!-- ============ 6. 車位拆算 ============ -->
+  <section class="panel" id="panel-parking">
+    <h2>車位拆算</h2>
+    <p class="sub">實價登錄或廣告單常包含車位價格與坪數，此功能可算出「扣除車位後的真實房屋單價」</p>
+
+    <div class="grid2">
+      <div class="field"><label>房屋總價(含車位) <span class="unit">萬</span></label>
+        <input type="number" id="p_total" placeholder="例如: 2500"></div>
+      <div class="field"><label>權狀總坪數(含車位) <span class="unit">坪</span></label>
+        <input type="number" id="p_ping" placeholder="例如: 50"></div>
+      <div class="field"><label>車位價格 <span class="unit">萬</span></label>
+        <input type="number" id="p_parkprice" placeholder="例如: 200"></div>
+      <div class="field"><label>車位坪數 <span class="unit">坪</span></label>
+        <input type="number" id="p_parkping" placeholder="例如: 10"></div>
+    </div>
+
+    <div class="resultbox">
+      <div class="rlabel">扣除車位後的真實房屋單價</div>
+      <div class="rvalue" id="p_out_unit">—<small>萬/坪</small></div>
+    </div>
+    <div class="detaillist">
+      <div class="row"><span>房屋價格(扣車位)</span><span class="v" id="p_out_price">— 萬</span></div>
+      <div class="row"><span>房屋坪數(扣車位)</span><span class="v" id="p_out_ping">— 坪</span></div>
+    </div>
+  </section>
+
+  <!-- ============ 7. 賣方實拿速算 ============ -->
+  <section class="panel" id="panel-net">
+    <h2>賣方實拿速算 <button id="n_reset" style="float:right;font-size:12px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 10px;cursor:pointer;font-family:inherit;">↻ 全部清除</button></h2>
+    <p class="sub">輸入欄位後即時計算，所有數字連動更新</p>
+
+    <h3 class="sectiontitle">基礎資訊</h3>
+    <div class="grid2">
+      <div class="field"><label>總坪數 <span class="unit">含車位</span></label>
+        <input type="number" id="n_totalping" placeholder="例如: 50.23"></div>
+      <div class="field"><label>車位坪數 <span class="unit">坪</span></label>
+        <input type="number" id="n_parkping" placeholder="例如: 22.16"></div>
+      <div class="field"><label>車位價格 <span class="unit">萬</span></label>
+        <input type="number" id="n_parkprice" placeholder="例如: 180"></div>
+    </div>
+
+    <h3 class="sectiontitle">取得資訊(算稅基礎)</h3>
+    <div class="grid2">
+      <div class="field"><label>房屋取得價格 <span class="unit">萬・屋主當年買多少</span></label>
+        <input type="number" id="n_acqprice" placeholder="例如: 1052"></div>
+      <div class="field"><label>取得相關成本 <span class="unit">萬・仲、契、印、代</span></label>
+        <input type="number" id="n_acqfee" placeholder="例如: 13"></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>前次移轉日期 <span class="unit">民國年</span></label>
+        <div class="datefield">
+          <select id="n_d1y"></select><select id="n_d1m"></select><select id="n_d1d"></select>
+        </div>
+      </div>
+      <div class="field"><label>本次預計交易日期 <span class="unit">民國年</span></label>
+        <div class="datefield">
+          <select id="n_d2y"></select><select id="n_d2m"></select><select id="n_d2d"></select>
+        </div>
+      </div>
+    </div>
+
+    <div class="toggle-row">
+      <div>
+        <div class="t-label">自用住宅滿 6 年優惠</div>
+        <div class="t-desc">勾選 → 免稅額 400 萬、超過部分 10% 稅率</div>
+      </div>
+      <label class="switch"><input type="checkbox" id="n_selfuse"><span class="slider"></span></label>
+    </div>
+    <div class="note">請填寫兩個日期 → 自動判定持有期間與稅率</div>
+
+    <h3 class="sectiontitle">手動輸入項目<span class="badge">查單後填入</span></h3>
+    <div class="grid2">
+      <div class="field"><label>土增稅 <span class="unit">萬・依稅單</span></label>
+        <input type="number" id="n_landtax" placeholder="例如: 1.6"></div>
+      <div class="field"><label>剩餘貸款餘額 <span class="unit">萬・要還銀行的</span></label>
+        <input type="number" id="n_loanbal" placeholder="例如: 840"></div>
+    </div>
+
+    <h3 class="sectiontitle">服務費用計算方式<span class="badge">影響實拿</span></h3>
+    <p class="sub" style="margin:0 0 8px;">賣方實際付的服務費，會從實拿扣掉</p>
+    <div class="segbtns" id="n_svcmode" style="margin-bottom:8px;">
+      <button data-v="auto" class="on">預設 4%</button>
+      <button data-v="manual">手動輸入</button>
+    </div>
+    <div class="field" id="n_svcmanual_wrap" style="display:none;margin-bottom:8px;">
+      <label>服務費(手動) <span class="unit">萬</span></label>
+      <input type="number" id="n_svcmanual" placeholder="例如: 60">
+    </div>
+    <div class="note" id="n_svcnote">服務費 = 成交總價 × 4%</div>
+
+    <h3 class="sectiontitle">房地合一可認列移轉費用<span class="badge">影響稅基</span></h3>
+    <p class="sub" style="margin:0 0 8px;">算房地合一稅時可從稅基扣除的金額(抵稅用，不足真的支出)</p>
+    <div class="segbtns" id="n_deductmode" style="margin-bottom:8px;">
+      <button data-v="samesvc" class="on">同服務費</button>
+      <button data-v="manual">手動輸入</button>
+      <button data-v="pct3">3% 上限30萬</button>
+    </div>
+    <div class="field" id="n_deductmanual_wrap" style="display:none;margin-bottom:8px;">
+      <label>可認列移轉費用(手動) <span class="unit">萬</span></label>
+      <input type="number" id="n_deductmanual" placeholder="例如: 40">
+    </div>
+    <div class="note" id="n_deductnote">可認列移轉費用 = 同服務費金額</div>
+
+    <h3 class="sectiontitle">想賣的價格<span class="badge">雙向連動</span></h3>
+    <p class="sub" style="margin:0 0 8px;">直接輸入總價或單價，另一欄會自動算出</p>
+    <div class="grid2">
+      <div class="field"><label>想賣的總價 <span class="unit">萬</span></label>
+        <input type="number" id="n_asktotal" placeholder="例如: 1585"></div>
+      <div class="field"><label>房屋單價 <span class="unit">萬/坪・已扣車位</span></label>
+        <input type="number" id="n_askunit" placeholder="例如: 50.05"></div>
+    </div>
+    <div class="note">輸入後自動顯示「房屋價格 / 房屋坪數」</div>
+
+    <div class="grid2">
+      <div class="detaillist" style="padding:14px 16px;">
+        <div style="font-size:12.5px;color:var(--ink-soft);font-weight:600;margin-bottom:6px;">房屋單價(談價用)</div>
+        <div style="font-size:22px;font-weight:800;color:var(--gold-deep);" id="n_out_unit">— 萬/坪</div>
+      </div>
+      <div class="detaillist" style="padding:14px 16px;">
+        <div style="font-size:12.5px;color:var(--ink-soft);font-weight:600;margin-bottom:6px;">房地合一稅</div>
+        <div style="font-size:22px;font-weight:800;color:var(--gold-deep);" id="n_out_tax">— 萬</div>
+      </div>
+    </div>
+
+    <div class="resultbox" style="margin-top:16px;">
+      <div class="rlabel">屋主實拿(扣全部費用 + 稅 + 貸款)</div>
+      <div class="rvalue" id="n_out_net">—<small>萬</small></div>
+    </div>
+
+    <div class="detaillist">
+      <div style="font-size:13px;font-weight:700;padding:10px 0 4px;">費用明細</div>
+      <div class="row"><span>代書費(潤筆)</span><span class="v" id="n_d_agent">0.10 萬</span></div>
+      <div class="row"><span>實價登錄費</span><span class="v" id="n_d_reg">0.20 萬</span></div>
+      <div class="row"><span>履保費(成交價 × 萬分之三)</span><span class="v" id="n_d_guar">— 萬</span></div>
+      <div class="row"><span>服務費</span><span class="v" id="n_d_svc">— 萬</span></div>
+      <div class="row"><span>塗銷費 + 稅籍資料</span><span class="v" id="n_d_clear">0.60 萬</span></div>
+      <div class="row"><span>土增稅</span><span class="v" id="n_d_landtax">— 萬</span></div>
+      <div class="row"><span>房地合一稅</span><span class="v" id="n_d_tax">— 萬</span></div>
+      <div class="row"><span>剩餘貸款</span><span class="v" id="n_d_loan">— 萬</span></div>
+      <div class="row total"><span>合計扣除</span><span class="v neg" id="n_d_sum">— 萬</span></div>
+    </div>
+
+    <h3 class="sectiontitle" style="margin-top:24px;">反推賣拿：屋主說「我要拿 ___ 萬」</h3>
+    <p class="sub" style="margin:0 0 8px;">輸入屋主想賣拿的金額，系統反推總價與單價應該掛多少(其他欄位需先填好)</p>
+    <div class="field">
+      <input type="number" id="n_reverse_want" placeholder="例如：屋主想拿 600 萬">
+    </div>
+    <div class="note" id="n_reverse_out" style="margin-top:8px;">輸入金額後會顯示建議掛牌總價與單價</div>
+  </section>
+
+  <div class="customize-hint">
+    這是你的房產計算機模板 — <b>可自行客製</b>：把 header 裡的「萬能房產計算機」改成你自己的品牌名稱與 Logo 文字即可；所有計算式都寫在檔案底部的 &lt;script&gt; 內，方便你依實際稅率或收費標準調整。文末的 LINE / 電話按鈕可自行替換成你的聯絡方式。
+  </div>
+
+  <footer class="pagefoot">© 2026 中壢房仲小張 萬能房產計算機 | 僅供參考，實際金額以銀行/政府核定為準</footer>
+
+  <div class="contact-bar">
+    <a href="https://line.me/ti/p/1qIfu4rH2B" target="_blank" rel="noopener" class="contact-btn line">💬 LINE 跟小張諮詢</a>
+    <a href="tel:0989077938" class="contact-btn phone">📞 直接打電話給小張</a>
+  </div>
+</div>
+
+<script>
+/* ---------- Tab setup ---------- */
+const TABS = [
+  {id:'land', icon:'📐', label:'房地合一'},
+  {id:'afford', icon:'💼', label:'購屋能力'},
+  {id:'mortgage', icon:'🏠', label:'房貸試算'},
+  {id:'fees', icon:'🏦', label:'買賣雜費'},
+  {id:'convert', icon:'🔄', label:'坪數換算'},
+  {id:'parking', icon:'🚗', label:'車位拆算'},
+  {id:'net', icon:'💰', label:'賣方實拿速算'},
+];
+const tabsEl = document.getElementById('tabs');
+TABS.forEach((t,i)=>{
+  const b = document.createElement('button');
+  b.innerHTML = `${t.icon} ${t.label}`;
+  b.className = i===0 ? 'active' : '';
+  b.onclick = ()=>switchTab(t.id);
+  b.dataset.id = t.id;
+  tabsEl.appendChild(b);
+});
+function switchTab(id){
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('active', b.dataset.id===id));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active', p.id==='panel-'+id));
+}
+switchTab('land');
+
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+function num(id){ const v = parseFloat($(id).value); return isNaN(v) ? 0 : v; }
+function fmt(n, d=2){
+  if(n===null || n===undefined || isNaN(n)) return '—';
+  return n.toLocaleString('zh-TW', {minimumFractionDigits:0, maximumFractionDigits:d});
+}
+function setupSeg(containerId, onChange){
+  const wrap = $(containerId);
+  wrap.querySelectorAll('button').forEach(b=>{
+    b.onclick = ()=>{
+      wrap.querySelectorAll('button').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on');
+      onChange(b.dataset.v);
+    };
+  });
+}
+function segVal(containerId){
+  return $(containerId).querySelector('button.on').dataset.v;
+}
+
+/* ================= 1. 房地合一 ================= */
+function landTaxRate(holdYears, selfUse){
+  if(selfUse && holdYears >= 6) return {type:'self'};
+  if(holdYears <= 2) return {type:'flat', rate:0.45, label:'45%(持有2年內)'};
+  if(holdYears <= 5) return {type:'flat', rate:0.35, label:'35%(持有2-5年)'};
+  if(holdYears <= 10) return {type:'flat', rate:0.20, label:'20%(持有5-10年)'};
+  return {type:'flat', rate:0.15, label:'15%(持有10年以上)'};
+}
+setupSeg('l_feemode', v=>{
+  $('l_feemanual_wrap').style.display = v==='manual' ? 'block':'none';
+  calcLand();
+});
+setupSeg('l_hold', calcLand);
+$('l_selfuse').onchange = calcLand;
+['l_sell','l_cost','l_landgain','l_costfee','l_feemanual'].forEach(id=>$(id).oninput = calcLand);
+
+function calcLand(){
+  const sell = num('l_sell');
+  const cost = num('l_cost');
+  const landgain = num('l_landgain');
+  const costfee = num('l_costfee');
+  const feemode = segVal('l_feemode');
+  const holdMap = {'2':1, '5':4, '10':8, '99':11};
+  const holdYears = holdMap[segVal('l_hold')];
+  const selfUse = $('l_selfuse').checked;
+
+  let fee;
+  if(feemode==='auto'){
+    fee = Math.min(sell*0.03, 30);
+    $('l_feeauto_note').textContent = `系統計算: ${fmt(fee)} (成交價3%，上限30萬)`;
+  } else {
+    fee = num('l_feemanual');
+    $('l_feeauto_note').textContent = '';
+  }
+
+  const base = sell - cost - landgain - costfee - fee;
+  const baseClamped = Math.max(base, 0);
+
+  const rateInfo = landTaxRate(holdYears, selfUse);
+  let tax, rateLabel;
+  if(rateInfo.type==='self'){
+    const excess = Math.max(baseClamped - 400, 0);
+    tax = excess * 0.10;
+    rateLabel = '自用住宅：400萬免稅+超過10%';
+  } else {
+    tax = baseClamped * rateInfo.rate;
+    rateLabel = rateInfo.label;
+  }
+
+  if(sell===0 && cost===0){
+    $('l_out_tax').innerHTML = '—<small>萬</small>';
+    $('l_out_base').textContent = '— 萬';
+    $('l_out_rate').textContent = '—';
+    $('l_out_fee').textContent = '— 萬';
+    return;
+  }
+  $('l_out_tax').innerHTML = `${fmt(tax)}<small>萬</small>`;
+  $('l_out_base').textContent = `${fmt(baseClamped)} 萬`;
+  $('l_out_rate').textContent = rateLabel;
+  $('l_out_fee').textContent = `${fmt(fee)} 萬`;
+}
+calcLand();
+
+/* ================= 2. 購屋能力 ================= */
+setupSeg('a_ratio', calcAfford);
+setupSeg('a_years', calcAfford);
+['a_income','a_down'].forEach(id=>$(id).oninput = calcAfford);
+
+function calcAfford(){
+  const income = num('a_income');
+  const down = num('a_down');
+  const ratio = parseFloat(segVal('a_ratio'));
+  const years = parseFloat(segVal('a_years'));
+  const annualRate = 0.023;
+  const r = annualRate/12;
+  const n = years*12;
+  const monthlyPay = income*ratio;
+
+  if(income===0){
+    $('a_out_total').innerHTML = '—<small>萬</small>';
+    $('a_out_loan').textContent = '— 萬';
+    $('a_out_monthly').textContent = '— 萬';
+    return;
+  }
+  const loan = monthlyPay * (1-Math.pow(1+r,-n))/r;
+  const total = loan + down;
+  $('a_out_total').innerHTML = `${fmt(total)}<small>萬</small>`;
+  $('a_out_loan').textContent = `${fmt(loan)} 萬`;
+  $('a_out_monthly').textContent = `${fmt(monthlyPay)} 萬`;
+}
+calcAfford();
+
+/* ================= 3. 房貸試算 ================= */
+['m_amount','m_rate','m_years','m_grace'].forEach(id=>$(id).oninput = calcMortgage);
+
+function calcMortgage(){
+  const P = num('m_amount');
+  const annualRate = num('m_rate')/100;
+  const years = num('m_years');
+  const grace = num('m_grace');
+  const r = annualRate/12;
+  const n = years*12;
+  const g = grace*12;
+
+  if(P===0 || n<=0){
+    $('m_out_monthly').innerHTML = '—<small>萬</small>';
+    $('m_out_grace').textContent = '— 萬';
+    $('m_out_interest').textContent = '— 萬';
+    $('m_out_totalpay').textContent = '— 萬';
+    return;
+  }
+
+  const graceMonthly = P * r;
+  const remainMonths = n - g;
+  let monthlyAfter;
+  if(r===0){
+    monthlyAfter = P / remainMonths;
+  } else {
+    monthlyAfter = P*r*Math.pow(1+r, remainMonths) / (Math.pow(1+r, remainMonths)-1);
+  }
+  const totalPay = graceMonthly*g + monthlyAfter*remainMonths;
+  const totalInterest = totalPay - P;
+
+  $('m_out_monthly').innerHTML = `${fmt(monthlyAfter)}<small>萬</small>`;
+  $('m_out_grace').textContent = g>0 ? `${fmt(graceMonthly)} 萬` : '無寬限期';
+  $('m_out_interest').textContent = `${fmt(totalInterest)} 萬`;
+  $('m_out_totalpay').textContent = `${fmt(totalPay)} 萬`;
+}
+calcMortgage();
+
+/* ================= 4. 買賣雜費 ================= */
+setupSeg('f_role', v=>{
+  $('f_buyer_extra').style.display = v==='buyer' ? 'grid':'none';
+  $('f_seller_extra').style.display = v==='seller' ? 'grid':'none';
+  calcFees();
+});
+['f_price','f_housevalue','f_landvalue','f_landtax','f_svcrate'].forEach(id=>$(id).oninput = calcFees);
+
+function calcFees(){
+  const price = num('f_price');
+  const role = segVal('f_role');
+  const detailEl = $('f_out_detail');
+  detailEl.innerHTML = '';
+  let total = 0;
+  const rows = [];
+
+  if(price===0){
+    $('f_out_total').textContent = '$—';
+    return;
+  }
+
+  if(role==='buyer'){
+    const houseValue = num('f_housevalue');
+    const landValue = num('f_landvalue');
+    const stampTax = price * 0.001;
+    const deedTax = houseValue * 0.06;
+    const regFee = (landValue + houseValue) * 0.001;
+    const docFee = 0.016; // 2張x80元 ≈0.016萬
+    const other = price * 0.005; // 銀行徵信/開辦/產險等粗估
+    rows.push(['契稅(房屋評定現值×6%)', deedTax]);
+    rows.push(['印花稅(總價×0.1%)', stampTax]);
+    rows.push(['地政登記規費', regFee]);
+    rows.push(['書狀費', docFee]);
+    rows.push(['其他成本(徵信/開辦/產險等，粗估)', other]);
+  } else {
+    const landTax = num('f_landtax');
+    const svcRate = num('f_svcrate')/100;
+    const svc = price * svcRate;
+    const agentFee = 0.1;
+    const clearFee = 0.6;
+    rows.push(['土地增值稅(依稅單)', landTax]);
+    rows.push([`仲介服務費(總價×${(svcRate*100).toFixed(1)}%)`, svc]);
+    rows.push(['代書費(潤筆)', agentFee]);
+    rows.push(['塗銷費+稅籍資料', clearFee]);
+  }
+
+  rows.forEach(([label, val])=>{
+    total += val;
+    const row = document.createElement('div');
+    row.className='row';
+    row.innerHTML = `<span>${label}</span><span class="v">${fmt(val)} 萬</span>`;
+    detailEl.appendChild(row);
+  });
+  const totalRow = document.createElement('div');
+  totalRow.className='row total';
+  totalRow.innerHTML = `<span>合計</span><span class="v">${fmt(total)} 萬</span>`;
+  detailEl.appendChild(totalRow);
+
+  $('f_out_total').textContent = `$${fmt(total)} 萬`;
+}
+calcFees();
+
+/* ================= 5. 坪數換算 ================= */
+const PING_TO_M2 = 3.30579;
+let convertLock = false;
+$('c_ping').oninput = ()=>{
+  if(convertLock) return; convertLock=true;
+  $('c_m2').value = (num('c_ping')*PING_TO_M2).toFixed(2);
+  convertLock=false;
+};
+$('c_m2').oninput = ()=>{
+  if(convertLock) return; convertLock=true;
+  $('c_ping').value = (num('c_m2')/PING_TO_M2).toFixed(2);
+  convertLock=false;
+};
+
+/* ================= 6. 車位拆算 ================= */
+['p_total','p_ping','p_parkprice','p_parkping'].forEach(id=>$(id).oninput = calcParking);
+function calcParking(){
+  const total = num('p_total');
+  const ping = num('p_ping');
+  const parkPrice = num('p_parkprice');
+  const parkPing = num('p_parkping');
+  const netPrice = total - parkPrice;
+  const netPing = ping - parkPing;
+  if(ping===0 || netPing<=0){
+    $('p_out_unit').innerHTML = '—<small>萬/坪</small>';
+    $('p_out_price').textContent = '— 萬';
+    $('p_out_ping').textContent = '— 坪';
+    return;
+  }
+  const unit = netPrice/netPing;
+  $('p_out_unit').innerHTML = `${fmt(unit)}<small>萬/坪</small>`;
+  $('p_out_price').textContent = `${fmt(netPrice)} 萬`;
+  $('p_out_ping').textContent = `${fmt(netPing)} 坪`;
+}
+calcParking();
+
+/* ================= 7. 賣方實拿速算 ================= */
+// build date selects
+function fillSelect(el, from, to, suffix){
+  el.innerHTML = `<option value="">-</option>` + Array.from({length:to-from+1},(_,i)=>from+i)
+    .map(v=>`<option value="${v}">${v}${suffix}</option>`).join('');
+}
+fillSelect($('n_d1y'), 60, 115, '年');
+fillSelect($('n_d1m'), 1, 12, '月');
+fillSelect($('n_d1d'), 1, 31, '日');
+fillSelect($('n_d2y'), 60, 130, '年');
+fillSelect($('n_d2m'), 1, 12, '月');
+fillSelect($('n_d2d'), 1, 31, '日');
+$('n_d2y').value = 115; $('n_d2m').value = 6; $('n_d2d').value = 29;
+
+setupSeg('n_svcmode', v=>{
+  $('n_svcmanual_wrap').style.display = v==='manual' ? 'block':'none';
+  calcNet();
+});
+setupSeg('n_deductmode', v=>{
+  $('n_deductmanual_wrap').style.display = v==='manual' ? 'block':'none';
+  calcNet();
+});
+$('n_selfuse').onchange = calcNet;
+[
+  'n_totalping','n_parkping','n_parkprice','n_acqprice','n_acqfee',
+  'n_landtax','n_loanbal','n_svcmanual','n_deductmanual'
+].forEach(id=>$(id).oninput = calcNet);
+['n_d1y','n_d1m','n_d1d','n_d2y','n_d2m','n_d2d'].forEach(id=>$(id).onchange = calcNet);
+
+let netLock = false;
+$('n_asktotal').oninput = ()=>{
+  if(netLock) return;
+  const netPing = num('n_totalping') - num('n_parkping');
+  if(netPing>0){
+    netLock=true;
+    const netPrice = num('n_asktotal') - num('n_parkprice');
+    $('n_askunit').value = (netPrice/netPing).toFixed(2);
+    netLock=false;
+  }
+  calcNet();
+};
+$('n_askunit').oninput = ()=>{
+  if(netLock) return;
+  const netPing = num('n_totalping') - num('n_parkping');
+  if(netPing>0){
+    netLock=true;
+    const netPrice = num('n_askunit')*netPing;
+    $('n_asktotal').value = (netPrice + num('n_parkprice')).toFixed(2);
+    netLock=false;
+  }
+  calcNet();
+};
+
+function rocDateToDays(y,m,d){
+  if(!y || !m || !d) return null;
+  // convert to a comparable serial day count (approx, using 365.25/12 months)
+  return (parseInt(y)*365.25) + (parseInt(m)*30.4375) + parseInt(d);
+}
+function holdYearsBetween(){
+  const d1 = rocDateToDays($('n_d1y').value,$('n_d1m').value,$('n_d1d').value);
+  const d2 = rocDateToDays($('n_d2y').value,$('n_d2m').value,$('n_d2d').value);
+  if(d1===null || d2===null) return null;
+  return (d2-d1)/365.25;
+}
+
+function computeNet(askTotal){
+  const totalPing = num('n_totalping');
+  const parkPing = num('n_parkping');
+  const parkPrice = num('n_parkprice');
+  const acqPrice = num('n_acqprice');
+  const acqFee = num('n_acqfee');
+  const landTaxManual = num('n_landtax');
+  const loanBal = num('n_loanbal');
+  const selfUse = $('n_selfuse').checked;
+
+  const svcMode = segVal('n_svcmode');
+  const svc = svcMode==='auto' ? askTotal*0.04 : num('n_svcmanual');
+
+  const deductMode = segVal('n_deductmode');
+  let deduct;
+  if(deductMode==='samesvc') deduct = svc;
+  else if(deductMode==='pct3') deduct = Math.min(askTotal*0.03, 30);
+  else deduct = num('n_deductmanual');
+
+  const holdYears = holdYearsBetween();
+
+  // 房地合一稅
+  const base = askTotal - acqPrice - acqFee - deduct;
+  const baseClamped = Math.max(base,0);
+  let tax = 0, rateInfo = null;
+  if(holdYears !== null){
+    rateInfo = landTaxRate(holdYears, selfUse);
+    if(rateInfo.type==='self'){
+      tax = Math.max(baseClamped-400,0)*0.10;
+    } else {
+      tax = baseClamped*rateInfo.rate;
+    }
+  }
+
+  const agentFee = 0.10;
+  const regFee = 0.20;
+  const guarFee = askTotal * 0.0003;
+  const clearFee = 0.60;
+
+  const sumDeduct = agentFee+regFee+guarFee+svc+clearFee+landTaxManual+tax+loanBal;
+  const net = askTotal - sumDeduct;
+
+  return {agentFee,regFee,guarFee,svc,clearFee,landTaxManual,tax,loanBal,sumDeduct,net,base:baseClamped,holdYears};
+}
+
+function calcNet(){
+  const askTotal = num('n_asktotal');
+  const netPing = num('n_totalping') - num('n_parkping');
+
+  // svc/deduct notes
+  const svcMode = segVal('n_svcmode');
+  $('n_svcnote').textContent = svcMode==='auto' ? '服務費 = 成交總價 × 4%' : '服務費 = 手動輸入金額';
+  const deductMode = segVal('n_deductmode');
+  $('n_deductnote').textContent = deductMode==='samesvc' ? '可認列移轉費用 = 同服務費金額'
+    : deductMode==='pct3' ? '可認列移轉費用 = 成交總價 × 3%(上限30萬)'
+    : '可認列移轉費用 = 手動輸入金額';
+
+  if(askTotal===0 && num('n_totalping')===0){
+    $('n_out_unit').textContent='— 萬/坪';
+    $('n_out_tax').textContent='— 萬';
+    $('n_out_net').innerHTML='—<small>萬</small>';
+    ['n_d_guar','n_d_svc','n_d_landtax','n_d_tax','n_d_loan','n_d_sum'].forEach(id=>$(id).textContent='— 萬');
+    $('n_reverse_out').textContent = '輸入金額後會顯示建議掛牌總價與單價';
+    return;
+  }
+
+  const r = computeNet(askTotal);
+
+  $('n_out_unit').textContent = netPing>0 ? `${fmt((askTotal-num('n_parkprice'))/netPing)} 萬/坪` : '— 萬/坪';
+  $('n_out_tax').textContent = `${fmt(r.tax)} 萬`;
+  $('n_out_net').innerHTML = `${fmt(r.net)}<small>萬</small>`;
+
+  $('n_d_guar').textContent = `${fmt(r.guarFee)} 萬`;
+  $('n_d_svc').textContent = `${fmt(r.svc)} 萬`;
+  $('n_d_landtax').textContent = `${fmt(r.landTaxManual)} 萬`;
+  $('n_d_tax').textContent = `${fmt(r.tax)} 萬`;
+  $('n_d_loan').textContent = `${fmt(r.loanBal)} 萬`;
+  $('n_d_sum').textContent = `${fmt(r.sumDeduct)} 萬`;
+
+  // reverse calc
+  const want = num('n_reverse_want');
+  if(want>0){
+    let lo=want, hi=want*4+1000, mid;
+    for(let i=0;i<60;i++){
+      mid=(lo+hi)/2;
+      const rr = computeNet(mid);
+      if(rr.net < want) lo=mid; else hi=mid;
+    }
+    const finalTotal = hi;
+    const finalUnit = netPing>0 ? (finalTotal-num('n_parkprice'))/netPing : null;
+    $('n_reverse_out').innerHTML = `建議掛牌總價約 <b>${fmt(finalTotal)} 萬</b>` +
+      (finalUnit!==null ? `，單價約 <b>${fmt(finalUnit)} 萬/坪</b>(已扣車位)` : '');
+  } else {
+    $('n_reverse_out').textContent = '輸入金額後會顯示建議掛牌總價與單價';
+  }
+}
+$('n_reverse_want').oninput = calcNet;
+$('n_reset').onclick = ()=>{
+  document.querySelectorAll('#panel-net input[type=number]').forEach(i=>i.value='');
+  document.querySelectorAll('#panel-net select').forEach(s=>s.value='');
+  $('n_d2y').value=115; $('n_d2m').value=6; $('n_d2d').value=29;
+  $('n_selfuse').checked=false;
+  document.querySelectorAll('#n_svcmode button').forEach((b,i)=>b.classList.toggle('on', i===0));
+  document.querySelectorAll('#n_deductmode button').forEach((b,i)=>b.classList.toggle('on', i===0));
+  $('n_svcmanual_wrap').style.display='none';
+  $('n_deductmanual_wrap').style.display='none';
+  calcNet();
+};
+calcNet();
+</script>
+</body>
+</html>
